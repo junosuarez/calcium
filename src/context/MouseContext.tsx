@@ -1,4 +1,4 @@
-import React, { useEffect, useContext, useState, ReactChildren } from "react";
+import React, { useEffect, useState } from "react";
 
 interface Mouse {
   x: number;

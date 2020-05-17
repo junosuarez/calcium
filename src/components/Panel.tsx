@@ -71,11 +71,7 @@ export function Panel(props: React.PropsWithChildren<Props>) {
         if (dockable) {
           setDocked(dockable);
         } else {
-          // adjust height now that undocked
-          // setLayout((state) => ({
-          //   ...state,
-          //   size: 400
-          // }));
+          // undocked
         }
       }
     }
@@ -90,7 +86,7 @@ export function Panel(props: React.PropsWithChildren<Props>) {
         setResizing(undefined);
       }
     }
-  }, [dragging, resizing, mouse, dockable]);
+  }, [dragging, resizing, mouse, dockable, canvas]);
 
   useEffect(() => {
     switch (docked) {

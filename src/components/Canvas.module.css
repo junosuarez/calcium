@@ -5,4 +5,5 @@
   overflow: hidden;
 
   flex-grow: 1;
+  position: relative; /* new positioning context for inner docked panels */
 }

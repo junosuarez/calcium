@@ -1,7 +1,7 @@
 .Panel {
   border: 1px solid #aaa;
   background-color: #eee;
-  position: relative;
+  position: absolute;
 
   box-shadow: 0 0 10px #aaa;
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useLayoutEffect } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import css from "./Canvas.module.css";
 import { Layout } from "./Panel";
 
@@ -18,8 +18,9 @@ export default function Canvas({ children }: React.PropsWithChildren<{}>) {
     width: 0,
     height: 0,
   });
-  const ctx = React.createRef<HTMLDivElement>();
-  console.log("canvas", x);
+
+  const ctx = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     if (ctx.current) {
       const el = ctx.current;
@@ -33,7 +34,7 @@ export default function Canvas({ children }: React.PropsWithChildren<{}>) {
         window.removeEventListener("resize", update);
       };
     }
-  }, [ctx.current]);
+  }, [ctx]);
 
   return (
     <CanvasContext.Provider value={x as any}>

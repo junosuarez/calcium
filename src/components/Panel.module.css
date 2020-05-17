@@ -4,6 +4,9 @@
   position: relative;
 
   box-shadow: 0 0 10px #aaa;
+
+  display: flex;
+  flex-direction: column;
 }
 
 .dragging {
@@ -43,4 +46,24 @@
 .dockableLeft {
   border-left-width: 4px;
   border-left-style: solid;
+}
+.dockableRight {
+  border-right-width: 4px;
+  border-right-style: solid;
+}
+
+.main {
+  flex-grow: 1;
+  flex-shrink: 1;
+  overflow-x: hidden;
+  overflow-y: scroll;
+}
+
+.foot {
+  text-align: right;
+  user-select: none;
+  cursor: nwse-resize;
+}
+.foot::after {
+  content: "⟓";
 }

@@ -3,6 +3,7 @@ import { useState, useContext, useEffect } from "react";
 import React from "react";
 import classnames from "classnames";
 import MouseContext from "../context/MouseContext";
+import { CanvasContext } from "./Canvas";
 
 interface Props {
   title: string;
@@ -10,23 +11,22 @@ interface Props {
   docked?: "left" | "right";
 }
 
-interface Layout {
-  offsetX: number;
-  offsetY: number;
-  sizeX: number;
-  sizeY: number | string;
+export interface Layout {
+  left: number;
+  top: number;
+  width: number;
+  height: number;
 }
 
 export function Panel(props: React.PropsWithChildren<Props>) {
   const mouse = useContext(MouseContext);
-  const [layout, setLayout] = useState<Layout>(
-    props.layout || {
-      offsetX: 0,
-      offsetY: 0,
-      sizeX: 250,
-      sizeY: 200,
-    }
-  );
+  const canvas = useContext(CanvasContext);
+  const [layout, setLayout] = useState<Layout>({
+    left: 0,
+    top: 0,
+    width: 250,
+    height: canvas.height,
+  });
   const [docked, setDocked] = useState<"left" | "right" | undefined>(
     props.docked
   );
@@ -34,22 +34,42 @@ export function Panel(props: React.PropsWithChildren<Props>) {
     { x: number; y: number; layout: Layout } | undefined
   >();
 
-  const dockableLeft = dragging && layout.offsetX < 20;
+  const [resizing, setResizing] = useState<
+    { x: number; y: number; layout: Layout } | undefined
+  >();
+
+  const right = layout.left + layout.width;
+
+  const dockable =
+    dragging &&
+    (layout.left < 20
+      ? "left"
+      : canvas.width - right < 20
+      ? "right"
+      : undefined);
 
   useEffect(() => {
     if (dragging) {
       if (mouse.button === 1) {
+        // constrain within visible canvas area
         setLayout((state) => ({
           ...state,
-          offsetX: Math.max(0, mouse.x - dragging.x + dragging.layout.offsetX),
-          offsetY: Math.max(0, mouse.y - dragging.y + dragging.layout.offsetY),
-          sizeY: "80%",
+          left: Math.min(
+            Math.max(0, mouse.x - dragging.x + dragging.layout.left),
+            // include border width
+            canvas.width - state.width - 5
+          ),
+          top: Math.min(
+            Math.max(0, mouse.y - dragging.y + dragging.layout.top),
+            canvas.height - state.height
+          ),
+          height: Math.round(canvas.height * 0.8),
         }));
       } else {
         // end dragging
         setDragging(undefined);
-        if (dockableLeft) {
-          setDocked("left");
+        if (dockable) {
+          setDocked(dockable);
         } else {
           // adjust height now that undocked
           // setLayout((state) => ({
@@ -59,20 +79,39 @@ export function Panel(props: React.PropsWithChildren<Props>) {
         }
       }
     }
-  }, [dragging, mouse, dockableLeft]);
+    if (resizing) {
+      if (mouse.button === 1) {
+        setLayout((state) => ({
+          ...state,
+          height: mouse.y - resizing.y + resizing.layout.height,
+        }));
+      } else {
+        // end resizing
+        setResizing(undefined);
+      }
+    }
+  }, [dragging, resizing, mouse, dockable]);
 
   useEffect(() => {
     switch (docked) {
       case "left":
         setLayout((state) => ({
           ...state,
-          offsetX: 0,
-          offsetY: 0, // toolbar height
-          sizeY: "100%", // ?
+          left: 0,
+          top: 0, // toolbar height
+          height: canvas.height, // ?
+        }));
+        break;
+      case "right":
+        setLayout((state) => ({
+          ...state,
+          left: canvas.width - state.width,
+          top: 0, // toolbar height
+          height: canvas.height, // ?
         }));
         break;
     }
-  }, [docked, setLayout]);
+  }, [docked, canvas, setLayout]);
 
   return (
     <div
@@ -80,13 +119,15 @@ export function Panel(props: React.PropsWithChildren<Props>) {
         [css.dragging]: dragging,
         [css.dockedLeft]: docked === "left",
         [css.dockedRight]: docked === "right",
-        [css.dockableLeft]: dockableLeft,
+        [css.dockedRight]: docked === "right",
+        [css.dockableLeft]: dockable === "left",
+        [css.dockableRight]: dockable === "right",
       })}
       style={{
-        height: layout.sizeY,
-        width: layout.sizeX,
-        top: layout.offsetY,
-        left: layout.offsetX,
+        height: layout.height,
+        width: layout.width,
+        top: layout.top,
+        left: layout.left,
       }}
     >
       <div className={css.titleBar}>
@@ -99,9 +140,27 @@ export function Panel(props: React.PropsWithChildren<Props>) {
         >
           {props.title}
         </h2>
-        {!docked ? <button onClick={() => setDocked("left")}>||←</button> : ""}
+        {!docked ? (
+          <>
+            <button onClick={() => setDocked("left")}>||←</button>
+            <button onClick={() => setDocked("right")}>→||</button>
+          </>
+        ) : null}
       </div>
-      <div style={{ padding: 3 }}>{props.children}</div>
+      <div className={css.main} style={{ padding: 3 }}>
+        {props.children}
+        <div>{resizing ? "resizing" : null}</div>
+        <div>{dragging ? `dragging ${canvas.width - right}` : null}</div>
+        <div>{dockable ? `dockable ${dockable}` : null}</div>
+      </div>
+      {!docked ? (
+        <div
+          className={css.foot}
+          onMouseDown={(e) => {
+            setResizing({ x: mouse.x, y: mouse.y, layout });
+          }}
+        ></div>
+      ) : null}
     </div>
   );
 }

@@ -1,0 +1,46 @@
+.Panel {
+  border: 1px solid #aaa;
+  background-color: #eee;
+  position: relative;
+
+  box-shadow: 0 0 10px #aaa;
+}
+
+.dragging {
+  cursor: grabbing;
+}
+
+.Panel .titleBar {
+  background: #ccc;
+  cursor: grab;
+  user-select: none;
+  display: flex;
+}
+
+.Panel.dragging .titleBar {
+  outline: 1px dotted #aaa;
+  cursor: grabbing;
+}
+
+.Panel .titleBar h2 {
+  margin: 0;
+  padding: 3px 8px;
+  font-size: 14px;
+  font-weight: normal;
+  flex-grow: 1;
+}
+.dockedLeft {
+  border-left-width: 0;
+  border-top-width: 0;
+  border-bottom-width: 0;
+}
+.dockedRight {
+  border-right-width: 0;
+  border-top-width: 0;
+  border-bottom-width: 0;
+}
+
+.dockableLeft {
+  border-left-width: 4px;
+  border-left-style: solid;
+}
